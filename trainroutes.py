@@ -28,22 +28,35 @@ def data_extract(api_url):
 #Answering part 1
 data_value_1 = data_extract(api_url_1)
 print('1. Long names for all Light Rail and Heavy Rail subway lines:')
-for listed_attr in data_value_1:                #Iterating through each dictionary in the data list
-    current_attr = listed_attr['attributes']   #Extracting value for 'attribute' key
-    long_name = current_attr['long_name']         #Extracting value of 'long_name' key
+for listed_attr in data_value_1:                # Iterating through each dictionary in the data list
+    current_attr = listed_attr['attributes']   # Extracting value for 'attribute' key
+    long_name = current_attr['long_name']         # Extracting value of 'long_name' key
     print(long_name)
 
 #Answering part 2 a and b
 data_value_2 = data_extract(api_url_2)
 route_list = []
 print('2. Most and least stops')
-for listed_attr in data_value_2:                #Iterating through each dictionary in the data list
-    current_attr = listed_attr['attributes']   #Extracting value for 'attribute' key
-    stop_route = current_attr['description']         #Extracting string containing stop and route name
-    route = re.findall("(?<=- ).*(?= -)", stop_route) 
-    route_list += route
+for listed_attr in data_value_2:                     # Iterating through each dictionary in the data list
+    current_attr = listed_attr['attributes']         # Extracting value for 'attribute' key
+    stop_route = current_attr['description']         # Extracting string containing stop and route name
+    route = re.findall("(?<=- ).*(?= -) | (?<=- ).* \([A-Z]\)?", stop_route)        # Extracting route from stop descriptions with regular expression
+    route_list += route                              # Adding each route to list of route to traverse through
 
-print(route_list)
-print(Counter(route_list).keys())
-print(Counter(route_list).values())
+two_dict = Counter(route_list)                       # Importing list of routes titles derived from json response into counter object
+
+# Regex is not handling every case. This for loop eliminates two 
+for entry in list(two_dict):                        
+    if two_dict[entry] < 2:                         #  Eliminating two route names that show up once. 
+        del two_dict[entry]
+
+print('Here is the counter dictionary representing each route and the number of stops they represent')
+print(two_dict)
+
+#Extracting the routes with the least and most stops from the counter dictionary
+minimum = min(two_dict, key=two_dict.get)           
+maximum = max(two_dict, key=two_dict.get)
+
+print('Route with the least stops: ' + str(minimum) + ' with ' + str(two_dict[minimum]) + ' stops')
+print('Route with the most stops: ' + str(maximum) + ' with ' + str(two_dict[maximum]) + ' stops')
 
