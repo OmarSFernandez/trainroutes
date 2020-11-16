@@ -40,15 +40,21 @@ print('2. Most and least stops')
 for listed_attr in data_value_2:                     # Iterating through each dictionary in the data list
     current_attr = listed_attr['attributes']         # Extracting value for 'attribute' key
     stop_route = current_attr['description']         # Extracting string containing stop and route name
-    route = re.findall("(?<=- ).*(?= -) | (?<=- ).* \([A-Z]\)?", stop_route)        # Extracting route from stop descriptions with regular expression
+    route = re.findall("(?<=- ).* \([A-Z]\)", stop_route)  
+    if route == []:
+        route = re.findall("(?<=- ).*(?= -)", stop_route)
+        if route == []: 
+            route = re.findall("(?<=- ).*", stop_route)
+            if route == []:
+                route = ["No Match"]        # Extracting route from stop descriptions with regular expression
     route_list += route                              # Adding each route to list of route to traverse through
 
 two_dict = Counter(route_list)                       # Importing list of routes titles derived from json response into counter object
 
 # Regex is not handling every case. This for loop eliminates two 
-for entry in list(two_dict):                        
-    if two_dict[entry] < 2:                         #  Eliminating two route names that show up once. 
-        del two_dict[entry]
+#for entry in list(two_dict):                        
+#    if two_dict[entry] < 2:                         #  Eliminating two route names that show up once. 
+#        del two_dict[entry]
 
 print('Here is the counter dictionary representing each route and the number of stops they represent')
 print(two_dict)
