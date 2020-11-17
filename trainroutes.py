@@ -2,6 +2,7 @@ import requests     # Module for accessing website data
 import json         # Module for parsing JSON resulting from request for data
 import re           # Module for regular expressions 
 from collections import Counter     #Used to count number of stops in a route
+from pprint import pprint
 
 #Setting variables for authentication
 api_url_1 = 'https://api-v3.mbta.com/routes?filter[type]=0,1'    #Accessing only the light (type:0) and heavy (type:1) rail types
@@ -23,7 +24,17 @@ def data_extract(api_url):
     #Return the list of dictionaries containing the data
     return data_value
 
+#In order to create a add dictionary keys to a data dictionary while parsing data.
+#I'm using this to have each line be a key. Their values being a list of strings containing there respective stops.
+class my_dictionary(dict): 
+    # __init__ function 
+    def __init__(self): 
+        self = dict() 
+    # Function to add key:value pair
+    def add(self, key, value): 
+        self[key] = value 
 
+route_dict = my_dictionary() 
 
 #Answering part 1
 data_value_1 = data_extract(api_url_1)
@@ -35,6 +46,7 @@ for listed_attr in data_value_1:                # Iterating through each diction
 
 #Answering part 2 a and b
 data_value_2 = data_extract(api_url_2)
+sorted_data_list = []
 route_list = []
 print('2. Most and least stops')
 for listed_attr in data_value_2:                     # Iterating through each dictionary in the data list
@@ -48,13 +60,13 @@ for listed_attr in data_value_2:                     # Iterating through each di
             if route == []:
                 route = ["No Match"]        # Extracting route from stop descriptions with regular expression
     route_list += route                              # Adding each route to list of route to traverse through
+    #Creating list of dictionaries containing 'description', 'stop' and 'line' to sort through later
+    #Previous json data did not have distinct 'line' denotation
+    sorted_data_list += [{'description' : current_attr['description'], 'stop' : current_attr['name'], 'line' : route[0]}]
 
 two_dict = Counter(route_list)                       # Importing list of routes titles derived from json response into counter object
 
-# Regex is not handling every case. This for loop eliminates two 
-#for entry in list(two_dict):                        
-#    if two_dict[entry] < 2:                         #  Eliminating two route names that show up once. 
-#        del two_dict[entry]
+
 
 print('Here is the counter dictionary representing each route and the number of stops they represent')
 print(two_dict)
@@ -66,3 +78,19 @@ maximum = max(two_dict, key=two_dict.get)
 print('Route with the least stops: ' + str(minimum) + ' with ' + str(two_dict[minimum]) + ' stops')
 print('Route with the most stops: ' + str(maximum) + ' with ' + str(two_dict[maximum]) + ' stops')
 
+#Answering 2c
+
+#Creating dictionary that will hold 'lines' as keys and 'stops' for each line as a list value.
+for line in two_dict.keys():
+    route_dict.add(line, [])
+
+print(sorted_data_list)
+print(route_dict)
+
+for entry in sorted_data_list:
+    if any(entry['stop'] in s for s in route_dict[entry['line']]):
+        continue
+    else:
+        route_dict[entry['line']] += [entry['stop']]
+
+pprint(route_dict)
