@@ -25,6 +25,23 @@ def data_extract(api_url):
     #Return the list of dictionaries containing the data
     return data_value
 
+#Function for finding the shortest path between 'nodes' or stops in our case
+#For more info visit: https://www.python.org/doc/essays/graphs/
+def find_shortest_path(graph, start, end, path=[]):
+        path = path + [start]
+        if start == end:
+            return path
+        if start in graph == False:
+            return None
+        shortest = None
+        for node in graph[start]:
+            if node not in path:
+                newpath = find_shortest_path(graph, node, end, path)
+                if newpath:
+                    if not shortest or len(newpath) < len(shortest):
+                        shortest = newpath
+        return shortest
+
 route_data = data_extract(route_url)            #Using function 
 route_ids = []
 
@@ -59,8 +76,8 @@ for route_id in route_ids:
         stop_dict[stop_id] += [route_id]          # Creating a dictionary of stop keys and list of routes values.
         stop_name_dict[stop_id] = stop_name
         stop_id_dict[stop_name] = stop_id
-pprint(stop_dict)
-pprint(stop_name_dict)
+#pprint(stop_dict)
+#pprint(stop_name_dict)
  #       if stop_name in stop_dict.keys():               # Conditional to ensure each stop is added to the dictionary only once
  #           stop_dict[stop_name] += [route_id]          # Creating a dictionary of stop keys and list of routes values.
  #       else:
@@ -106,11 +123,8 @@ for key in route_dict:  #For each route_id
         else:
             continue
 
-pprint(route_conn_dict)
+#pprint(route_conn_dict)
 
-
-'''print("these are your peer groups: ")
-print(ntrsct_groups)'''
 
 # ***** PART 3 ANSWER ***** 
 print('***** PART 3 ANSWER *****')
@@ -122,41 +136,8 @@ stop_2 = stop_id_dict[str(input("Enter your second stop: "))]
 
 for key in stop_dict:                               # Getting what routes stop at that stop
     if key == stop_1:
-        s1_routes = stop_dict[key]
+        s1_routes = stop_dict[key][0]
     if key == stop_2:
-        s2_routes = stop_dict[key]
+        s2_routes = stop_dict[key][0]
 
-for key in route_dict:
-    if any(stop_1 in s for s in route_dict[key]) and any(stop_2 in s for s in route_dict[key]):
-        print(str(stop_name_dict[stop_1]) + " and " + str(stop_name_dict[stop_2]) + " are on the same line: " + key)
-        route_found = True
-
-if route_found == False:
-    for route_s1 in s1_routes:
-        for route_s2 in s2_routes:
-            if any(route_s1 in s for s in route_conn_dict[route_s2]) == True:
-                print("Take " + str(route_s1) + " to " + (route_s2))
-                route_found == True
-            elif route_found == False:
-                if bool(set(route_conn_dict[route_s1]) & set(route_conn_dict[route_s2])) == True:
-                    connections = set(route_conn_dict[route_s1]) & set(route_conn_dict[route_s2])
-                    print("Take " + str(route_s1) + ", one of these --> " + str(connections) + ", then " + str(route_s2))
-                    route_found == True
-
-
-
-    '''for con_route in ntrsct_groups:                               # Checking to see if connections appear in stops that connect multiple lines
-            check_1 = any(item in s1_routes for item in con_route)
-            check_2 = any(item in s2_routes for item in con_route)
-            if check_1 and check_2 == True:                         # secondary Check for routes that intersect to find connecting lines.  
-                print("You can take: " + str(con_route))
-
-#if bool(set(s1_routes) & set(s2_routes)) == True:   # Comparing list of routes that stop at each stop
-#    connections = str(set(s1_routes) & set(s2_routes))
-#    print("The following line can be taken between " + stop_1 + " and " + stop_2 + " : " + connections)
-#else:
-#    for con_route in ntrsct_groups:                               # Checking to see if connections appear in stops that connect multiple lines
-#        check_1 = any(item in s1_routes for item in con_route)
-#        check_2 = any(item in s2_routes for item in con_route)
-#        if check_1 and check_2 == True:                         # secondary Check for routes that intersect to find connecting lines.  
-#            print("You can take: " + str(con_route))'''
+print(find_shortest_path(route_conn_dict, s1_routes, s2_routes))
